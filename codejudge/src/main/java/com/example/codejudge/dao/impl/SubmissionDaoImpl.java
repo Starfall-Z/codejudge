@@ -24,6 +24,7 @@ public class SubmissionDaoImpl extends JdbcDaoSupport implements SubmissionDao {
         s.setCode(rs.getString("code"));
         s.setStatus(rs.getString("status"));
         s.setSubmitTime(rs.getTimestamp("submit_time").toLocalDateTime());
+        s.setJudgeType(rs.getString("judge_type"));
         return s;
     };
 
@@ -40,14 +41,15 @@ public class SubmissionDaoImpl extends JdbcDaoSupport implements SubmissionDao {
 
     @Override
     public void save(Submission s) {
-        String sql = "INSERT INTO submissions (username, problem_id, language, code, status, submit_time) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO submissions (username, problem_id, language, code, status, submit_time, judge_type) VALUES (?, ?, ?, ?, ?, ?, ?)";
         getJdbcTemplate().update(sql,
                 s.getUsername(),
                 s.getProblemId(),
                 s.getLanguage(),
                 s.getCode(),
                 s.getStatus(),
-                java.sql.Timestamp.valueOf(s.getSubmitTime())  // 加上时间
+                java.sql.Timestamp.valueOf(s.getSubmitTime()), // 加上时间
+                s.getJudgeType()
         );
     }
 

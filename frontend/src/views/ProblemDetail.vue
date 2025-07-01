@@ -20,6 +20,12 @@
     <option value="cpp">C++</option>
   </select>
 
+  <h4>选择判题方式</h4>
+  <select v-model="judgeType" class="custom-select">
+    <option value="local">Local</option>
+    <option value="ai">AI</option>
+  </select>
+
   <textarea v-model="code" placeholder="在此处输入你的代码" rows="12"></textarea>
 
   <!-- ✅ 按钮横向排布 -->
@@ -37,7 +43,8 @@ export default {
     return {
       problem: {},
       code: "",
-      language:"cpp"
+      language:"cpp",
+      judgeType:"ai"
     };
   },
   mounted() {
@@ -58,7 +65,8 @@ export default {
           problemId: id,
           code: this.code,
           username: localStorage.getItem("username") || "匿名用户",
-          language: this.language
+          language: this.language,
+          judgeType: this.judgeType
         })
       }).then(() => {
         alert("提交成功！");
@@ -101,7 +109,7 @@ export default {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(16px); /* 毛玻璃核心 */
   -webkit-backdrop-filter: blur(16px); /* Safari 兼容 */
-  border-radius: 12px;
+  border-radius: 24px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
 }
 

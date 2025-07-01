@@ -11,5 +11,6 @@ public class Submission {
     private String language;
     private String code;
     private String status;
+    private String judgeType;
     private LocalDateTime submitTime;
 }

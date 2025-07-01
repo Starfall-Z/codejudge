@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h2>欢迎登录 LiteCode 🚀</h2>
+      <h2>欢迎登录 CodeJudge 🚀</h2>
       <form @submit.prevent="login">
         <input v-model="username" placeholder="请输入用户名" />
         <input v-model="password" type="password" placeholder="请输入密码" />

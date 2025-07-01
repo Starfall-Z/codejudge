@@ -14,6 +14,7 @@
             <th>用户</th>
             <th>题目编号</th>
             <th>语言</th>
+            <th>判题方式</th> <!-- ✅ 新增列 -->
             <th>状态</th>
             <th>提交时间</th>
             <th>操作</th>
@@ -25,8 +26,11 @@
             <td>{{ sub.username }}</td>
             <td>{{ sub.problemId }}</td>
             <td>{{ sub.language }}</td>
-            <td :class="{ accepted: sub.status === 'Accepted', failed: sub.status !== 'Accepted' }">
-              {{ sub.status }}
+            <td>{{ sub.judgeType === 'ai' ? 'AI' : 'Local' }}</td>
+            <td>
+              <span class="status-text" :data-status="sub.status.toUpperCase()">
+                {{ sub.status }}
+              </span>
             </td>
             <td>{{ format(sub.submitTime) }}</td>
             <td>
@@ -144,14 +148,16 @@ export default {
   border-bottom: none;
 }
 
-.accepted {
-  color: green;
+.status-text {
   font-weight: bold;
 }
 
-.failed {
-  color: red;
-  font-weight: bold;
+.status-text[data-status="AC"] {
+  color: #00a200; /* AC 绿色 */
+}
+
+.status-text:not([data-status="AC"]) {
+  color: #e53935; /* 其他状态红色 */
 }
 
 button {

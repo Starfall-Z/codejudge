@@ -7,7 +7,11 @@ import com.example.codejudge.dao.ProblemDao;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.*;
 import java.util.List;
 
 @Service
@@ -31,15 +35,22 @@ public class JudgeService {
             String codeToRun = sub.getCode();
             String result;
 
-            if ("java".equalsIgnoreCase(sub.getLanguage())) {
-                String fullCode = wrapJavaCode(codeToRun);
-                result = runJavaAndCompare(fullCode, problem.getInput(), problem.getOutput());
-            } else if ("cpp".equalsIgnoreCase(sub.getLanguage()) || "C++".equalsIgnoreCase(sub.getLanguage())) {
-                result = runCppAndCompare(codeToRun, problem.getInput(), problem.getOutput());
-            } else {
-                result = "UNSUPPORTED";
+            if("ai".equalsIgnoreCase(sub.getJudgeType())){
+                result=callWenxinAndJudge(sub,problem);
+                submissionDao.updateStatus(sub.getId(), result);
+                continue;
             }
 
+            else if ("java".equalsIgnoreCase(sub.getLanguage())) {
+                String fullCode = wrapJavaCode(codeToRun);
+                result = runJavaAndCompare(fullCode, problem.getInput(), problem.getOutput());
+            }
+            else if ("cpp".equalsIgnoreCase(sub.getLanguage()) || "C++".equalsIgnoreCase(sub.getLanguage())) {
+                result = runCppAndCompare(codeToRun, problem.getInput(), problem.getOutput());
+            }
+            else {
+                result = "UNSUPPORTED";
+            }
             submissionDao.updateStatus(sub.getId(), result);
         }
     }
@@ -112,6 +123,7 @@ public class JudgeService {
             return "RE";
         }
     }
+
     private String runCppAndCompare(String userCode, String input, String expectedOutput) {
         try {
             // 写入 Main.cpp
@@ -150,6 +162,75 @@ public class JudgeService {
         } catch (Exception e) {
             e.printStackTrace();
             return "RE";
+        }
+    }
+    private String callWenxinAndJudge(Submission sub, Problem problem) {
+        try {
+            // 1. 构造 prompt 内容
+            String prompt = String.format(
+                    "你是一个编程助教，请根据以下信息判断学生代码是否正确：\n\n" +
+                            "【题目描述】\n%s\n\n" +
+                            "【输入示例】\n%s\n\n" +
+                            "【输出示例】\n%s\n\n" +
+                            "【提交语言】\n%s\n\n" +
+                            "【学生代码】\n%s\n\n" +
+                            "请遵循以下规则判断代码质量：\n" +
+                            "1. 如果代码中存在大量语法错误，或者根本不是代码，只是无意义的胡写等情况，请回答 CE。\n" +
+                            "2. 如果代码能运行，但不能得到正确答案，请回答 WA。\n" +
+                            "3. 如果代码大致能运行，存在少量语法错误但容易纠正，回答SE。\n" +
+                            "4. 如果代码能正确完成题目要求，请回答 AC。\n\n" +
+                            "你需要给出明确回答：AC、WA、SE 或 CE，并且给出解释。",
+                    problem.getDescription(),
+                    problem.getInput(),
+                    problem.getOutput(),
+                    sub.getLanguage(),
+                    sub.getCode()
+            );
+
+            // 2. 构造请求 JSON
+            Map<String, Object> jsonMap = new HashMap<>();
+            jsonMap.put("model", "ernie-3.5-8k");
+
+            List<Map<String, String>> messages = new ArrayList<>();
+            messages.add(Map.of("role", "user", "content", prompt));
+            jsonMap.put("messages", messages);
+
+            ObjectMapper mapper = new ObjectMapper();
+            String jsonPayload = mapper.writeValueAsString(jsonMap);
+
+            // 3. 创建连接
+            URL url = new URL("https://qianfan.baidubce.com/v2/chat/completions");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization", "Bearer bce-v3/ALTAK-zEZIJYfOjQupxrsxzuUHm/79c10447262bd200eb69b10eab3323b4fea0f790");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+
+            // 4. 发送请求体
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = jsonPayload.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            // 5. 读取响应体
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"));
+            StringBuilder response = new StringBuilder();
+            String responseLine;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+
+            System.out.println("AI 返回原文：\n" + response.toString());
+
+            // 6. 简单包含判断（也可以进一步解析 JSON）
+            if (response.toString().contains("AC")) return "AC";
+            else if (response.toString().contains("WA")) return "WA";
+            else if (response.toString().contains("SE")) return "SE";
+            else return "CE";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "AI_ERR";
         }
     }
 }

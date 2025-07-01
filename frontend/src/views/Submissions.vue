@@ -15,6 +15,7 @@
             <th>题目编号</th>
             <th>用户名</th>
             <th>语言</th>
+            <th>判题方式</th> <!-- ✅ 新增列 -->
             <th>状态</th>
             <th>提交时间</th>
           </tr>
@@ -25,9 +26,8 @@
             <td>{{ s.problemId }}</td>
             <td>{{ s.username }}</td>
             <td>{{ s.language || '未知' }}</td>
-            <td :class="{ accepted: s.status === 'Accepted', failed: s.status !== 'Accepted' }">
-              {{ s.status }}
-            </td>
+            <td>{{ s.judgeType === 'ai' ? 'AI' : 'Local' }}</td> <!-- ✅ 新增字段显示 -->
+            <td class="status-text" :data-status="s.status.toUpperCase()">{{ s.status }}</td>
             <td>{{ formatTime(s.submitTime) }}</td>
           </tr>
         </tbody>
@@ -85,7 +85,7 @@ export default {
   background: rgba(255, 255, 255, 0.33); /* 毛玻璃白色背景 */
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-radius: 16px;
+  border-radius: 24px;
   padding: 40px;
   max-width: 1000px;
   width: 100%;
@@ -147,6 +147,18 @@ export default {
 .failed {
   color: red;
   font-weight: bold;
+}
+
+.status-text {
+  font-weight: bold;
+}
+
+.status-text[data-status="AC"] {
+  color: #00a200; /* AC：绿色 */
+}
+
+.status-text:not([data-status="AC"]) {
+  color: #e53935; /* 其他：红色 */
 }
 
 .submission-table tr:last-child td {

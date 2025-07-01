@@ -13,6 +13,8 @@
         <button v-if="role === 'ADMIN'" @click="goToManageProblems">题库管理🛠️</button>
         <!-- ✅ 管理员才可见 -->
         <button v-if="role === 'ADMIN'" @click="goToManageSubmissions">记录管理🗃️</button>
+        <!-- ✅ 仅普通用户才可见 -->
+        <button v-if="role === 'USER'" @click="goToUserGuide">用户手册📘</button>
         <button class="logout" @click="logout">退出登录🏃‍</button>
       </div>
     </div>
@@ -25,7 +27,8 @@ export default {
   data() {
     return {
       username: localStorage.getItem('username') || '用户',
-      role: localStorage.getItem('role') || 'USER'
+      role: localStorage.getItem('role') || 'USER',
+      selectedCode:''
     };
   },
   methods: {
@@ -46,6 +49,12 @@ export default {
     },
     goToManageSubmissions() {
       this.$router.push('/admin/submissions');
+    },
+    goToUserGuide() {
+      this.$router.push('/user-guide');
+    },
+    viewCode(record){
+      this.selectedCode = record.code||"// 无代码内容";
     },
     logout() {
       localStorage.clear();
@@ -121,5 +130,35 @@ export default {
 
 .logout:hover {
   background-color: #dd4b39;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 90%;
+  max-height: 80%;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+.modal-content pre {
+  background: #f6f6f6;
+  padding: 10px;
+  border-radius: 6px;
+  overflow-x: auto;
 }
 </style>

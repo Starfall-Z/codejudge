@@ -19,10 +19,11 @@ public class SubmissionController {
 
     @PostMapping
     public String submit(@RequestBody Submission submission) {
-        // 手动填充一些字段
         submission.setStatus("Pending");
         submission.setSubmitTime(LocalDateTime.now());
-
+        if (submission.getJudgeType() == null) {
+            submission.setJudgeType("local"); // ✅ 默认值
+        }
         submissionDao.save(submission);
         return "提交成功，等待评测结果";
     }

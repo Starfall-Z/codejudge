@@ -9,6 +9,7 @@ import Review from '../views/Review.vue'
 import Manage from '../views/ProblemManage.vue'
 import UserProfile from '../views/UserProfile.vue'
 import AdminSubmissions from '../views/AdminSubmissions.vue'
+import UserGuide from '../views/UserGuide.vue'
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -22,6 +23,7 @@ const routes = [
   { path: '/admin/problems',component: Manage },
   { path: '/profile',component: UserProfile},
   { path: '/admin/submissions',component: AdminSubmissions},
+  { path: '/user-guide',component: UserGuide}
 ]
 
 const router = createRouter({

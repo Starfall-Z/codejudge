@@ -1,7 +1,7 @@
 <template>
   <div class="register-container">
     <div class="register-card">
-      <h2>欢迎注册 LiteCode 🚀</h2>
+      <h2>注册CodeJudge 🚀</h2>
       <form @submit.prevent="handleRegister">
         <input v-model="username" placeholder="请输入用户名" required />
         <input v-model="password" type="password" placeholder="请输入密码" required />
